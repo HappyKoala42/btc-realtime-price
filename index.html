@@ -3,21 +3,28 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>btc realtime price</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@3.5.1/dist/chart.min.js"></script>
-    <title>BTC price checker</title>
+
 </head>
 
-<body>
-
-    <canvas id="myChart" width="400" height="400"></canvas>
+<body style="background-color:#1b1d1e;">
+    <canvas id="myChart" width="600" height="250"></canvas>
     <script>
-        let bufferTime = 30;
-        let maxY;
-        let minY;
-        let currency = "";
-        let prices = [];
+        var days = 1;
+        var hours = 0;
+        var minutes = 0;
+        var seconds = 0;
+
+        var bufferTime = days * 86400 + hours * 3600 + minutes * 60 + seconds;
+        var currency = '';
+        var prices = [];
+        var clocks = [];
+        var dates = [];
+        var maxY;
+        var minY;
 
         async function pingServer() {
             const data = {
@@ -31,71 +38,68 @@
                 body: JSON.stringify(data)
             };
 
-            const res = await fetch('http://localhost:3000', options);
+            const res = await fetch('http://localhost:3000/', options);
             const json = await res.json();
             currency = json.currency;
-            pricecs = json.pricecs;
+            prices = json.prices;
+            clocks = json.clocks;
+            dates = json.dates;
+            console.log(prices.length);
         }
 
         async function getMean(array) {
-            let total = 0;
-            let count = 0;
+            var total = 0;
+            var count = 0;
 
-            array.forEach(function(item, index) {
-                total+= item;
+            array.forEach(function (item, index) {
+                total += item;
                 count++;
             });
-            return total/count;
 
+            return total / count;
         }
 
         async function getAxis() {
-            let average = await getMean(prices);
-            let diffUp = Math.max.apply(null, prices) - average;
-            let diffDown = average - Math.min.apply(null, prices);
-            let diffBigger = Math.max.apply(null, [diffUp, diffDown]);
+            var average = await getMean(prices);
+            var diffUp = Math.max.apply(null, prices) - average;
+            var diffDown = average - Math.min.apply(null, prices);;
+            var diffBigger = Math.max.apply(null, [diffUp, diffDown]);
 
-            maxY = average + diffUp * 1.5;
-            minY = average - diffDown * 1.5;
+            maxY = average + diffBigger * 1.5;
+            minY = average - diffBigger * 1.5;
         }
 
-        console.table(prices);
-
         async function chartIt() {
-
             await pingServer();
             await getAxis();
 
-            const ctx = document.getElementById('myChart').getContext('2d');
-            const myChart = new Chart(ctx, {
+            var ctx = document.getElementById('myChart');
+            var myChart = new Chart(ctx, {
                 type: 'line',
                 data: {
-                    labels: prices,
+                    labels: dates,
                     datasets: [{
-                        label: currency,
+                        label: currency + '\n(Last ' + days + '-Days ' + hours + '-Hours ' +
+                            minutes + '-Minutes ' + seconds + '-Seconds)',
                         data: prices,
                         backgroundColor: ['rgba(130, 17, 38, 5)'],
-                        borderColor: ['rgba(130, 17, 38, 1)'],
+                        borderColor: ['rgba(130, 17, 38, 1)', ],
                         borderWidth: 2
                     }]
                 },
                 options: {
-
                     elements: {
                         point: {
                             radius: 0
                         }
-
                     },
-
                     animation: {
-                        duration: 0
+                        duration: 0,
                     },
-
                     scales: {
                         y: {
                             max: maxY,
-                            min: minY
+                            min: minY,
                         }
                     }
                 }
@@ -108,12 +112,9 @@
             setTimeout(async function () {
                 location = location;
                 loop();
-                // console.log(prices);
-            }, 2000);
+            }, 3000);
         }());
     </script>
-
-
 </body>
 
 </html>
