@@ -13,14 +13,18 @@
 
     <canvas id="myChart" width="400" height="400"></canvas>
     <script>
-
         let bufferTime = 30;
+        let maxY;
+        let minY;
         let currency = "";
         let prices = [];
-        async function pingServer(){
-            const data = {bufferTime};
+
+        async function pingServer() {
+            const data = {
+                bufferTime
+            };
             const options = {
-                methods: 'POST',
+                method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
@@ -33,18 +37,43 @@
             pricecs = json.pricecs;
         }
 
+        async function getMean(array) {
+            let total = 0;
+            let count = 0;
+
+            array.forEach(function(item, index) {
+                total+= item;
+                count++;
+            });
+            return total/count;
+
+        }
+
+        async function getAxis() {
+            let average = await getMean(prices);
+            let diffUp = Math.max.apply(null, prices) - average;
+            let diffDown = average - Math.min.apply(null, prices);
+            let diffBigger = Math.max.apply(null, [diffUp, diffDown]);
+
+            maxY = average + diffUp * 1.5;
+            minY = average - diffDown * 1.5;
+        }
+
+        console.table(prices);
+
         async function chartIt() {
 
-            
+            await pingServer();
+            await getAxis();
 
             const ctx = document.getElementById('myChart').getContext('2d');
             const myChart = new Chart(ctx, {
                 type: 'line',
                 data: {
-                    labels: ['Red', 'Blue', 'Yellow', 'Green', 'Purple', 'Orange'],
+                    labels: prices,
                     datasets: [{
-                        label: 'Price',
-                        data: [12, 19, 3, 5, 2, 3],
+                        label: currency,
+                        data: prices,
                         backgroundColor: ['rgba(130, 17, 38, 5)'],
                         borderColor: ['rgba(130, 17, 38, 1)'],
                         borderWidth: 2
@@ -65,14 +94,23 @@
 
                     scales: {
                         y: {
-                            beginAtZero: true
+                            max: maxY,
+                            min: minY
                         }
                     }
                 }
             });
         }
-    
+
         chartIt();
+
+        (function loop() {
+            setTimeout(async function () {
+                location = location;
+                loop();
+                // console.log(prices);
+            }, 2000);
+        }());
     </script>
 
 
