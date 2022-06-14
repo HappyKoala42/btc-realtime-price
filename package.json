@@ -1,7 +1,7 @@
 {
   "dependencies": {
     "body-parser": "^1.20.0",
-    "cars": "^1.1.6",
+    "cors": "^2.8.5",
     "express": "^4.18.1",
     "puppeteer": "^14.4.0"
   }

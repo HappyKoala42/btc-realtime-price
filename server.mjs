@@ -1,7 +1,29 @@
 import puppeteer from "puppeteer";
 import express from "express";
-import cars from "cars";
+import cors from "cors";
 import bp from "body-parser";
+
+
+cors ({
+    origin: 'http://localhost:3000/',
+    allowedHeaders: 
+    [
+        "origin",
+        "x-Requested-With",
+        "content-Type",
+        "Accept",
+        "Authorization"
+    ],
+    credentials: true,
+    methods: "POST"
+})
+
+const port = 3000;
+const app = express();
+app.use(cors());
+app.use(bp.json());
+app.use(bp.urlencoded({ extended: true }));
+
 
 let url = "https://api.binance.com/api/v1/ticker/24hr"
 let currency = 'BTCUSDT'
@@ -37,9 +59,24 @@ async function scrapePrice() {
     await Promise.reject(new Error('scrapePrice'));
 }
 
+(function() {
+    app.post("/", (req, res) => {
+        console.log("Pinged");
+
+        res.json({
+            currency: currency,
+            prices: prices
+        }),
+
+        res.end();
+    })
+    app.listen(port, () => {console.clear(), console.log("Listening to port 3000")});
+}());
+
 (async function loop() {
     setTimeout(async function() {
-        await scrapePrice();
-        // call scrapePrice
-    });
-});
+        await scrapePrice().catch(() => {});
+        await loop();
+        // console.log(prices);
+    }, 1000);
+}());

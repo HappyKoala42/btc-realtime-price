@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.5.1/dist/chart.min.js"></script>
+    <title>BTC price checker</title>
+</head>
+
+<body>
+
+    <canvas id="myChart" width="400" height="400"></canvas>
+    <script>
+
+        let bufferTime = 30;
+        let currency = "";
+        let prices = [];
+        async function pingServer(){
+            const data = {bufferTime};
+            const options = {
+                methods: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            };
+
+            const res = await fetch('http://localhost:3000', options);
+            const json = await res.json();
+            currency = json.currency;
+            pricecs = json.pricecs;
+        }
+
+        async function chartIt() {
+
+            
+
+            const ctx = document.getElementById('myChart').getContext('2d');
+            const myChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['Red', 'Blue', 'Yellow', 'Green', 'Purple', 'Orange'],
+                    datasets: [{
+                        label: 'Price',
+                        data: [12, 19, 3, 5, 2, 3],
+                        backgroundColor: ['rgba(130, 17, 38, 5)'],
+                        borderColor: ['rgba(130, 17, 38, 1)'],
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+
+                    elements: {
+                        point: {
+                            radius: 0
+                        }
+
+                    },
+
+                    animation: {
+                        duration: 0
+                    },
+
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
+    
+        chartIt();
+    </script>
+
+
+</body>
+
+</html>
